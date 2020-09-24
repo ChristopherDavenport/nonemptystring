@@ -15,37 +15,57 @@ val dottyV = "0.28.0-bin-20200921-18578b3-NIGHTLY"
 lazy val `nonemptystring` = project.in(file("."))
   .disablePlugins(MimaPlugin)
   .settings(skip in publish := true)
-  .aggregate(sc2.jvm, sc2.js, dotty, tests)
+  .aggregate(core.jvm, core.js, tests.jvm, tests.js)
 
-lazy val sc2 = crossProject(JSPlatform, JVMPlatform)
+lazy val core = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Pure)
-  .in(file("modules/sc2"))
+  .in(file("modules/core"))
   .settings(
     name := "nonemptystring",
-    scalaVersion := "2.13.3",
-    crossScalaVersions := Seq(scalaVersion.value, "2.12.12"),
+    scalaVersion := dottyV,
+    crossScalaVersions := Seq(dottyV, "2.13.3", "2.12.12"),
 
     libraryDependencies ++= {
       if (isDotty.value) Nil
       else Seq("org.scala-lang" % "scala-reflect" % scalaVersion.value)
     },
-
-    addCompilerPlugin("org.typelevel" %% "kind-projector" % kindProjectorV cross CrossVersion.full),
-    addCompilerPlugin("com.olegpy"    %% "better-monadic-for" % betterMonadicForV),
+    Compile / unmanagedSourceDirectories ++= {
+      val major = if (isDotty.value) "-3" else "-2"
+      List(CrossType.Pure, CrossType.Full).flatMap(
+        _.sharedSrcDir(baseDirectory.value, "main").toList.map(f => file(f.getPath + major))
+      )
+    }
   )
 
-lazy val dotty = project.in(file("modules/dotty"))
-  .settings(
-    name := "nonemptystring",
-    scalaVersion := dottyV
-  )
 
-lazy val tests = project.in(file("modules/tests"))
+// lazy val sc2 = crossProject(JSPlatform, JVMPlatform)
+//   .crossType(CrossType.Pure)
+//   .in(file("modules/sc2"))
+//   .settings(
+//     name := "nonemptystring",
+//     scalaVersion := "2.13.3",
+//     crossScalaVersions := Seq(scalaVersion.value, "2.12.12"),
+
+//     libraryDependencies ++= {
+//       if (isDotty.value) Nil
+//       else Seq("org.scala-lang" % "scala-reflect" % scalaVersion.value)
+//     },
+//   )
+
+// lazy val dotty = project.in(file("modules/dotty"))
+//   .settings(
+//     name := "nonemptystring",
+//     scalaVersion := dottyV
+//   )
+
+lazy val tests = crossProject(JSPlatform, JVMPlatform)
+  .crossType(CrossType.Pure)
+  .in(file("modules/tests"))
   .settings(
     skip in publish := true,
     scalaVersion := dottyV,
-    crossScalaVersions := Seq(scalaVersion.value, "2.13.3", "2.12.12"),
-  ).dependsOn(dotty)
+    crossScalaVersions := Seq(dottyV, "2.13.3", "2.12.12"),
+  ).dependsOn(core)
   /*
   HOW TO DO THIS
   .dependsOn(
@@ -61,7 +81,7 @@ lazy val site = project.in(file("site"))
   .enablePlugins(MicrositesPlugin)
   .enablePlugins(MdocPlugin)
   .settings(skip in publish := true)
-  .dependsOn(sc2.jvm)
+  .dependsOn(core.jvm)
   .settings{
     import microsites._
     Seq(

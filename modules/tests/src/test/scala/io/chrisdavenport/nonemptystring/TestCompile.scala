@@ -8,4 +8,6 @@ object TestCompile {
   val appended = base.map(_.append(""))
   val prepended = base.map(_.prepend(""))
   val together: Option[NonEmptyString] = base.map(a => a ++ a)
+
+  val test = NonEmptyString(" ")
 }
