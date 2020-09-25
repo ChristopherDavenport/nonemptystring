@@ -21,13 +21,13 @@ object NonEmptyString {
       def fromString(s: String): Option[NonEmptyString] = 
         if (s.nonEmpty) Some(s)
         else None
-    }
 
-    extension (nes: NonEmptyString)
-      def toString: String = nes
-      def ++(that: NonEmptyString): NonEmptyString = nes + that
-      def append(s: String): NonEmptyString = nes + s
-      def prepend(s: String): NonEmptyString = s + nes
+      extension (nes: NonEmptyString)
+        def toString: String = nes
+        def ++(that: NonEmptyString): NonEmptyString = nes + that
+        def append(s: String): NonEmptyString = nes + s
+        def prepend(s: String): NonEmptyString = s + nes
+    }
   }
 
 }
